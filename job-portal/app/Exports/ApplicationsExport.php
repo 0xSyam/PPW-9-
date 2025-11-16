@@ -8,12 +8,22 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 
 class ApplicationsExport implements FromCollection, WithHeadings
 {
+    protected $jobId;
+
+    public function __construct($jobId = null)
+    {
+        $this->jobId = $jobId;
+    }
     /**
     * @return \Illuminate\Support\Collection
     */
     public function collection()
     {
-        return Application::with('user', 'job')->get()->map(function ($application) {
+        $query = Application::with('user', 'job');
+        if ($this->jobId) {
+            $query->where('job_id', $this->jobId);
+        }
+        return $query->get()->map(function ($application) {
             return [
                 'Applicant Name' => $application->user->name,
                 'Job Title' => $application->job->title,
